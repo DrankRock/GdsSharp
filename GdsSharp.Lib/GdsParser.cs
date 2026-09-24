@@ -323,6 +323,8 @@ public class GdsParser
         var dataType = Get<GdsRecordDataType>().Record;
         var pathType = GetOrDefault<GdsRecordPathType>()?.Record;
         var width = GetOrDefault<GdsRecordWidth>()?.Record;
+        var bgnExt = GetOrDefault<GdsRecordBgnExt>()?.Record;
+        var endExt = GetOrDefault<GdsRecordEndExt>()?.Record;
         var xy = Get<GdsRecordXy>().Record;
 
         var elem = new GdsPathElement
@@ -337,6 +339,10 @@ public class GdsParser
         if (pathType is not null) elem.PathType = (GdsPathType)pathType.Value;
 
         if (width is not null) elem.Width = width.Value;
+
+        if (bgnExt is not null) elem.BeginExtension = bgnExt.Value;
+
+        if (endExt is not null) elem.EndExtension = endExt.Value;
 
         return elem;
     }

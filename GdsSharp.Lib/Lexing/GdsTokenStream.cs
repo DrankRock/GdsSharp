@@ -80,38 +80,48 @@ public class GdsTokenStream : GdsStreamOperator, IDisposable, IEnumerable<IGdsRe
 
     private GdsTokenReference? Read()
     {
-        var pos = _reader.BaseStream.Position;
-        if (pos == _reader.BaseStream.Length) return null;
-
-        var header = new GdsHeader();
-        ((IGdsSimpleRead)header).Read(_reader, header);
-
-        // Stop when padding is reached
-        if (header is { Code: 0, Length: 0 }) return null;
-
-        // Get record
-        if (!Activators.TryGetValue(header.Code, out var activator))
-            throw new InvalidOperationException(
-                $"Could not find activator for code 0x{header.Code:X} ({header.Code}) at position 0x{_reader.BaseStream.Position:X} ({_reader.BaseStream.Position})");
-        var record = activator.Invoke();
-
-        switch (record)
+        while (true)
         {
-            case GdsRecordXy xy:
-                xy.NumPoints = header.NumToRead / 8;
-                xy.Coordinates = ReadGdsPoints(_reader.BaseStream.Position, header);
+            var pos = _reader.BaseStream.Position;
+            if (pos == _reader.BaseStream.Length) return null;
+
+            var header = new GdsHeader();
+            ((IGdsSimpleRead)header).Read(_reader, header);
+
+            // Stop when padding is reached
+            if (header is { Code: 0, Length: 0 }) return null;
+
+            if (header.Length < GdsHeader.RecordSize)
+                throw new InvalidOperationException(
+                    $"Invalid record length {header.Length} at position 0x{pos:X} ({pos})");
+
+            // Skip unknown records, GDS records are self-delimiting through their length field
+            if (!Activators.TryGetValue(header.Code, out var activator))
+            {
                 _reader.BaseStream.Position += header.NumToRead;
-                break;
-            case IGdsReadableRecord readableRecord:
-                readableRecord.Read(_reader, header);
-                break;
+                continue;
+            }
+
+            var record = activator.Invoke();
+
+            switch (record)
+            {
+                case GdsRecordXy xy:
+                    xy.NumPoints = header.NumToRead / 8;
+                    xy.Coordinates = ReadGdsPoints(_reader.BaseStream.Position, header);
+                    _reader.BaseStream.Position += header.NumToRead;
+                    break;
+                case IGdsReadableRecord readableRecord:
+                    readableRecord.Read(_reader, header);
+                    break;
+            }
+
+            if (record.GetLength() != header.NumToRead)
+                throw new InvalidOperationException(
+                    $"Record length mismatch at position 0x{_reader.BaseStream.Position:X} ({_reader.BaseStream.Position}), expected {header.NumToRead}, got {record.GetLength()}");
+
+            return new GdsTokenReference(header, record, pos);
         }
-
-        if (record.GetLength() != header.NumToRead)
-            throw new InvalidOperationException(
-                $"Record length mismatch at position 0x{_reader.BaseStream.Position:X} ({_reader.BaseStream.Position}), expected {header.NumToRead}, got {record.GetLength()}");
-
-        return new GdsTokenReference(header, record, pos);
     }
 
     private IEnumerable<GdsPoint> ReadGdsPoints(long offset, GdsHeader header)

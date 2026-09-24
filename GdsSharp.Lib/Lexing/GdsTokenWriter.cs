@@ -195,6 +195,10 @@ public class GdsTokenWriter
 
         if (element.Width != 0) yield return new GdsRecordWidth { Value = element.Width };
 
+        if (element.BeginExtension != 0) yield return new GdsRecordBgnExt { Value = element.BeginExtension };
+
+        if (element.EndExtension != 0) yield return new GdsRecordEndExt { Value = element.EndExtension };
+
         yield return new GdsRecordXy { Coordinates = element.Points, NumPoints = element.Points.Count};
     }
 
