@@ -4,15 +4,15 @@ namespace GdsSharp.Lib.Terminals.Records;
 
 public class GdsRecordWidth : GenericGdsRecord<int>
 {
-    private int _value;
+    /// <summary>
+    ///     Width in database units. A negative value indicates absolute width.
+    /// </summary>
+    public override int Value { get; set; }
 
-    public override int Value
-    {
-        get => _value;
-        set => _value = value < 0 ? -value : value;
-    }
+    /// <summary>
+    ///     True if the width is absolute (encoded as a negative width in the GDSII stream).
+    /// </summary>
+    public bool IsAbsolute => Value < 0;
 
     public override ushort Code => 0x0F03;
-
-    public bool IsAbsolute => Value < 0;
 }

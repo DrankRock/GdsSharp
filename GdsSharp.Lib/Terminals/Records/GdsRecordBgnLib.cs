@@ -1,4 +1,5 @@
-﻿using GdsSharp.Lib.Terminals.Abstractions;
+﻿using GdsSharp.Lib.Binary;
+using GdsSharp.Lib.Terminals.Abstractions;
 
 namespace GdsSharp.Lib.Terminals.Records;
 
@@ -23,5 +24,37 @@ public class GdsRecordBgnLib : IGdsSimpleRead, IGdsSimpleWrite
     public ushort GetLength()
     {
         return 24;
+    }
+
+    public void Read(GdsBinaryReader reader, GdsHeader header)
+    {
+        LastModificationTimeYear = reader.ReadInt16();
+        LastModificationTimeMonth = reader.ReadInt16();
+        LastModificationTimeDay = reader.ReadInt16();
+        LastModificationTimeHour = reader.ReadInt16();
+        LastModificationTimeMinute = reader.ReadInt16();
+        LastModificationTimeSecond = reader.ReadInt16();
+        LastAccessTimeYear = reader.ReadInt16();
+        LastAccessTimeMonth = reader.ReadInt16();
+        LastAccessTimeDay = reader.ReadInt16();
+        LastAccessTimeHour = reader.ReadInt16();
+        LastAccessTimeMinute = reader.ReadInt16();
+        LastAccessTimeSecond = reader.ReadInt16();
+    }
+
+    public void Write(GdsBinaryWriter writer)
+    {
+        writer.Write(LastModificationTimeYear);
+        writer.Write(LastModificationTimeMonth);
+        writer.Write(LastModificationTimeDay);
+        writer.Write(LastModificationTimeHour);
+        writer.Write(LastModificationTimeMinute);
+        writer.Write(LastModificationTimeSecond);
+        writer.Write(LastAccessTimeYear);
+        writer.Write(LastAccessTimeMonth);
+        writer.Write(LastAccessTimeDay);
+        writer.Write(LastAccessTimeHour);
+        writer.Write(LastAccessTimeMinute);
+        writer.Write(LastAccessTimeSecond);
     }
 }

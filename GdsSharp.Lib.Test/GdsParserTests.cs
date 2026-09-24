@@ -164,6 +164,64 @@ public class GdsParserTests
         path.Width.Should().Be(100);
     }
 
+    [Test]
+    public void TestParserPreservesNegativeWidth()
+    {
+        using var ms = new MemoryStream();
+        var writer = new GdsBinaryWriter(ms);
+        WriteSimpleRecord(writer, new GdsRecordHeader { Value = 600 });
+        WriteSimpleRecord(writer, ValidBgnLib());
+        WriteSimpleRecord(writer, new GdsRecordLibName { Value = "TEST" });
+        WriteSimpleRecord(writer, new GdsRecordUnits());
+        WriteSimpleRecord(writer, ValidBgnStr());
+        WriteSimpleRecord(writer, new GdsRecordStrName { Value = "ABS" });
+        WriteSimpleRecord(writer, new GdsRecordNoData { Type = GdsRecordNoDataType.Path });
+        WriteSimpleRecord(writer, new GdsRecordLayer { Value = 1 });
+        WriteSimpleRecord(writer, new GdsRecordDataType { Value = 0 });
+        WriteSimpleRecord(writer, new GdsRecordWidth { Value = -200 });
+        WriteSimpleRecord(writer, new GdsRecordXy
+        {
+            NumPoints = 2,
+            Coordinates = new[] { new GdsPoint(0, 0), new GdsPoint(500, 0) }
+        });
+        WriteSimpleRecord(writer, new GdsRecordNoData { Type = GdsRecordNoDataType.EndEl });
+        WriteSimpleRecord(writer, new GdsRecordNoData { Type = GdsRecordNoDataType.EndStr });
+        WriteSimpleRecord(writer, new GdsRecordNoData { Type = GdsRecordNoDataType.EndLib });
+        ms.Position = 0;
+
+        var file = GdsFile.From(ms);
+        var path = file.Structures.Single().Elements.Single().Element.Should().BeOfType<GdsPathElement>().Subject;
+
+        path.Width.Should().Be(-200);
+        path.IsAbsoluteWidth.Should().BeTrue();
+    }
+
+    [Test]
+    public void TestParserNormalizesLegacyYears()
+    {
+        using var ms = new MemoryStream();
+        var writer = new GdsBinaryWriter(ms);
+        WriteSimpleRecord(writer, new GdsRecordHeader { Value = 600 });
+        WriteSimpleRecord(writer, new GdsRecordBgnLib
+        {
+            LastModificationTimeYear = 98,
+            LastModificationTimeMonth = 5,
+            LastModificationTimeDay = 17,
+            LastAccessTimeYear = 98,
+            LastAccessTimeMonth = 5,
+            LastAccessTimeDay = 17
+        });
+        WriteSimpleRecord(writer, new GdsRecordLibName { Value = "TEST" });
+        WriteSimpleRecord(writer, new GdsRecordUnits());
+        WriteSimpleRecord(writer, new GdsRecordNoData { Type = GdsRecordNoDataType.EndLib });
+        ms.Position = 0;
+
+        var file = GdsFile.From(ms);
+
+        file.LastModificationTime.Year.Should().Be(1998);
+        file.LastAccessTime.Year.Should().Be(1998);
+    }
+
     private static void WriteSimpleRecord(GdsBinaryWriter writer, IGdsWriteableRecord record)
     {
         writer.Write((ushort)(record.GetLength() + GdsHeader.RecordSize));

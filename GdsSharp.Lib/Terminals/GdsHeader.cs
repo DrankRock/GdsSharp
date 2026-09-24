@@ -1,8 +1,9 @@
-﻿using GdsSharp.Lib.Terminals.Abstractions;
+﻿using GdsSharp.Lib.Binary;
+using GdsSharp.Lib.Terminals.Abstractions;
 
 namespace GdsSharp.Lib.Terminals;
 
-public class GdsHeader : IGdsSimpleRead, IGdsSimpleWrite
+public class GdsHeader : IGdsWriteableRecord
 {
     public const int RecordSize = 4;
 
@@ -25,5 +26,20 @@ public class GdsHeader : IGdsSimpleRead, IGdsSimpleWrite
     public ushort GetLength()
     {
         return RecordSize;
+    }
+
+    public static GdsHeader ReadFrom(GdsBinaryReader reader)
+    {
+        return new GdsHeader
+        {
+            Length = reader.ReadUInt16(),
+            Code = reader.ReadUInt16()
+        };
+    }
+
+    public void Write(GdsBinaryWriter writer)
+    {
+        writer.Write(Length);
+        writer.Write(Code);
     }
 }

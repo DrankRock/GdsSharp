@@ -85,8 +85,7 @@ public class GdsTokenStream : GdsStreamOperator, IDisposable, IEnumerable<IGdsRe
             var pos = _reader.BaseStream.Position;
             if (pos == _reader.BaseStream.Length) return null;
 
-            var header = new GdsHeader();
-            ((IGdsSimpleRead)header).Read(_reader, header);
+            var header = GdsHeader.ReadFrom(_reader);
 
             // Stop when padding is reached
             if (header is { Code: 0, Length: 0 }) return null;

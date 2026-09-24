@@ -36,15 +36,15 @@ public class PathBuilder
 
     /// <summary>
     ///     Adds a straight segment to the path.
-    ///     If <see cref="width" /> is provided it takes precedence over <see cref="widthStart" /> and <see cref="widthEnd" />.
-    ///     If only <see cref="widthEnd" /> is provided the width will be interpolated between the previous width and
-    ///     <see cref="widthEnd" />.
+    ///     If <paramref name="width" /> is provided it takes precedence over <paramref name="widthStart" /> and <paramref name="widthEnd" />.
+    ///     If only <paramref name="widthEnd" /> is provided the width will be interpolated between the previous width and
+    ///     <paramref name="widthEnd" />.
     /// </summary>
     /// <param name="length">Length of the segment.</param>
     /// <param name="widthStart">(optional) Width at the start of the segment.</param>
     /// <param name="widthEnd">(optional) Width at the end of the segment.</param>
     /// <param name="width">(optional) Function that provides a width for t on the interval [0,1].</param>
-    /// <param name="vertices">(optional) Number of vertices used for the path. Increase this if using <see cref="width" />.</param>
+    /// <param name="vertices">(optional) Number of vertices used for the path. Increase this if using <paramref name="width" />.</param>
     public PathBuilder Straight(int length, float? widthStart = null, float? widthEnd = null, Func<float, float?>? width = null, int vertices = 2)
     {
         width ??= t => t < 0.5f ? widthStart : widthEnd;

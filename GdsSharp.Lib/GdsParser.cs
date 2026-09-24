@@ -39,9 +39,9 @@ public class GdsParser
         {
             Version = header.Value,
             LibraryName = libName.Value,
-            LastModificationTime = new DateTime(bgnLib.LastModificationTimeYear, bgnLib.LastModificationTimeMonth, bgnLib.LastModificationTimeDay,
+            LastModificationTime = ToDateTime(bgnLib.LastModificationTimeYear, bgnLib.LastModificationTimeMonth, bgnLib.LastModificationTimeDay,
                 bgnLib.LastModificationTimeHour, bgnLib.LastModificationTimeMinute, bgnLib.LastModificationTimeSecond),
-            LastAccessTime = new DateTime(bgnLib.LastAccessTimeYear, bgnLib.LastAccessTimeMonth, bgnLib.LastAccessTimeDay, bgnLib.LastAccessTimeHour,
+            LastAccessTime = ToDateTime(bgnLib.LastAccessTimeYear, bgnLib.LastAccessTimeMonth, bgnLib.LastAccessTimeDay, bgnLib.LastAccessTimeHour,
                 bgnLib.LastAccessTimeMinute, bgnLib.LastAccessTimeSecond),
             PhysicalUnits = units.PhysicalUnits,
             UserUnits = units.UserUnits,
@@ -64,6 +64,17 @@ public class GdsParser
     }
 
     #region Helpers
+
+    /// <summary>
+    ///     Creates a <see cref="DateTime" /> from GDSII timestamp values.
+    ///     The GDSII format stores years relative to 1900, other tools store the full year,
+    ///     so small values are shifted into the expected range.
+    /// </summary>
+    private static DateTime ToDateTime(short year, short month, short day, short hour, short minute, short second)
+    {
+        if (year < 1900) year += 1900;
+        return new DateTime(year, month, day, hour, minute, second);
+    }
 
     /// <summary>
     ///     Peeks the next token and throws a <see cref="ParseException" /> if it is not of type <typeparamref name="T" />.
@@ -260,7 +271,11 @@ public class GdsParser
 
         if (pathType is not null) elem.PathType = (GdsPathType)pathType.Value;
 
-        if (width is not null) elem.Width = width.Value;
+        if (width is not null)
+        {
+            elem.Width = width.Value;
+            elem.IsAbsoluteWidth = width.IsAbsolute;
+        }
 
         if (transformation is not null) elem.Transformation = transformation;
 
@@ -338,7 +353,11 @@ public class GdsParser
 
         if (pathType is not null) elem.PathType = (GdsPathType)pathType.Value;
 
-        if (width is not null) elem.Width = width.Value;
+        if (width is not null)
+        {
+            elem.Width = width.Value;
+            elem.IsAbsoluteWidth = width.IsAbsolute;
+        }
 
         if (bgnExt is not null) elem.BeginExtension = bgnExt.Value;
 
@@ -427,9 +446,9 @@ public class GdsParser
         return new GdsStructure
         {
             Name = name.Value,
-            CreationTime = new DateTime(bgnStr.CreationTimeYear, bgnStr.CreationTimeMonth, bgnStr.CreationTimeDay, bgnStr.CreationTimeHour,
+            CreationTime = ToDateTime(bgnStr.CreationTimeYear, bgnStr.CreationTimeMonth, bgnStr.CreationTimeDay, bgnStr.CreationTimeHour,
                 bgnStr.CreationTimeMinute, bgnStr.CreationTimeSecond),
-            ModificationTime = new DateTime(bgnStr.LastModificationTimeYear, bgnStr.LastModificationTimeMonth, bgnStr.LastModificationTimeDay,
+            ModificationTime = ToDateTime(bgnStr.LastModificationTimeYear, bgnStr.LastModificationTimeMonth, bgnStr.LastModificationTimeDay,
                 bgnStr.LastModificationTimeHour, bgnStr.LastModificationTimeMinute, bgnStr.LastModificationTimeSecond),
             Elements = elements
         };

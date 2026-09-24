@@ -1,4 +1,5 @@
-﻿using GdsSharp.Lib.Terminals.Abstractions;
+﻿using GdsSharp.Lib.Binary;
+using GdsSharp.Lib.Terminals.Abstractions;
 
 namespace GdsSharp.Lib.Terminals.Records;
 
@@ -12,5 +13,17 @@ public class GdsRecordColRow : IGdsSimpleRead, IGdsSimpleWrite
     public ushort GetLength()
     {
         return 4;
+    }
+
+    public void Read(GdsBinaryReader reader, GdsHeader header)
+    {
+        NumCols = reader.ReadInt16();
+        NumRows = reader.ReadInt16();
+    }
+
+    public void Write(GdsBinaryWriter writer)
+    {
+        writer.Write(NumCols);
+        writer.Write(NumRows);
     }
 }

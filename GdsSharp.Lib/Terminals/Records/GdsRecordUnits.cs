@@ -1,4 +1,5 @@
-﻿using GdsSharp.Lib.Terminals.Abstractions;
+﻿using GdsSharp.Lib.Binary;
+using GdsSharp.Lib.Terminals.Abstractions;
 
 namespace GdsSharp.Lib.Terminals.Records;
 
@@ -14,5 +15,17 @@ public class GdsRecordUnits : IGdsSimpleRead, IGdsSimpleWrite
     public ushort GetLength()
     {
         return 16;
+    }
+
+    public void Read(GdsBinaryReader reader, GdsHeader header)
+    {
+        UserUnits = reader.ReadDouble();
+        PhysicalUnits = reader.ReadDouble();
+    }
+
+    public void Write(GdsBinaryWriter writer)
+    {
+        writer.Write(UserUnits);
+        writer.Write(PhysicalUnits);
     }
 }

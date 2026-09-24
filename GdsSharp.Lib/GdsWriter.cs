@@ -20,7 +20,7 @@ public class GdsWriter : GdsStreamOperator
                 Code = record.Code,
                 Length = (ushort)(record.GetLength() + GdsHeader.RecordSize)
             };
-            ((IGdsSimpleWrite)header).Write(writer);
+            header.Write(writer);
             writeableRecord.Write(writer);
         }
     }
